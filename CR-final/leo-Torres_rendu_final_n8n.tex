@@ -51,7 +51,7 @@
 % =========================
 \section{Contexte et objectifs}
 \subsection{Objectif du projet}
-Le workflow automatise la recherche d'offres de stage a l'etranger a partir d'une matrice \textit{ville × technologie}. Les resultats sont enrichis par un score de ville (MCP), normalises par LLM, dedoublonnes, puis exportes vers Google Sheets et resumes dans une synthese envoyee sur Discord.
+Le workflow automatise la recherche d'offres de stage a l'etranger a partir d'une matrice \textit{ville × technologie}. Les resultats sont enrichis par un score de ville (MCP), structures par LLM, dedoublonnes, puis exportes vers Google Sheets et resumes dans une synthese envoyee sur Discord.
 
 \subsection{Périmètre et hypothèses}
 \begin{itemize}
@@ -80,7 +80,7 @@ Un node Code genere les couples ville x technologie a partir de deux tableaux st
 Chaque couple declenche une recherche Tavily avec la requete type \texttt{company <tech> <city> internship}. La recherche est en \texttt{basic}, avec \texttt{max\_results=2}.
 
 \subsubsection{Étape 3 — Enrichissement scoring via MCP}
-Le MCP Client appelle l'outil \texttt{find\_city\_score} avec le nom de ville. Si la ville est connue, un score est renvoye et ajoute aux donnees d'entree; sinon le score est absent et le MCP indique \texttt{found=false}.
+Le MCP Client appelle l'outil \texttt{find\_city\_score} avec le nom de ville. Si la ville est connue, le MCP renvoie \texttt{sensitivity\_percent} et \texttt{city\_score}; sinon l'outil renvoie une erreur et aucun score n'est ajoute.
 
 \subsubsection{Étape 4 — Extraction d’informations via LLM}
 Le LLM retourne un JSON strict, sans texte additionnel, conforme a un schema fixe (company, job\_title, city, country, remote\_policy, contract\_type, salary, currency, duration, application\_deadline, skills, languages, source\_url, source\_title, city\_score). Les valeurs manquantes sont forcees a \texttt{null}.
@@ -150,7 +150,7 @@ Le calcul est implemente directement dans le serveur MCP.
 \end{itemize}
 
 \subsection{Évaluation : est-ce que ça fonctionne comme attendu ?}
-Pour les villes presentes dans la table, le score est coherent et stable. Les limites viennent des villes absentes ou des libelles atypiques (ex. quartiers, regions). Les aliases ameliorent le taux de correspondance, mais un enrichissement geographique serait utile.
+Pour les villes presentes dans la table, le score est coherent et stable. Les limites viennent des villes absentes ou des libelles atypiques (ex. quartiers, regions). Un enrichissement geographique serait utile.
 
 % =========================
 \section{Analyse critique}
@@ -213,7 +213,7 @@ Return a JSON array of objects. Each object must follow EXACTLY this schema:
 MAPPING RULES:
 - source_url = offer.url if present, else null
 - source_title = offer.title if present, else null
-- city_score = offer.score if present, else use input.search_score if provided, else null
+- city_score = input.content[0].text.city_score if present (MCP score), else null
 - remote_policy:
   - "remote" if clearly remote
   - "hybrid" if clearly hybrid
@@ -275,7 +275,7 @@ INPUT JSON (array of extracted offers):
     "languages": [],
     "source_url": "https://www.linkedin.com/jobs/crypto-jobs-berlin?countryRedirected=1",
     "source_title": "95 Crypto jobs in Berlin, Berlin, Germany (1 new)",
-    "city_score": 0.99972624
+    "city_score": 9.67
   },
   ...
 ]

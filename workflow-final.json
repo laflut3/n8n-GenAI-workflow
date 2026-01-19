@@ -159,21 +159,6 @@
     },
     {
       "parameters": {
-        "mode": "combine",
-        "fieldsToMatchString": "source_url",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -368,
-        288
-      ],
-      "id": "1b34ecf7-f472-4fbb-8567-b0b5e02ac247",
-      "name": "Merge"
-    },
-    {
-      "parameters": {
         "modelId": {
           "__rl": true,
           "value": "models/gemma-3-27b-it",
@@ -719,7 +704,7 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        464,
+        480,
         288
       ],
       "id": "6e791690-a2c5-4d02-a072-b396b0f5d071",
@@ -740,7 +725,7 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        992,
+        976,
         288
       ],
       "id": "82e37c95-3896-442c-83df-af5414acfc8b",
@@ -765,11 +750,26 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        288,
+        304,
         288
       ],
       "id": "3cb22dab-fecf-408a-a588-175c33d7ad74",
-      "name": "Merge1"
+      "name": "re merge de tout les résultat"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "source_url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -352,
+        288
+      ],
+      "id": "1b34ecf7-f472-4fbb-8567-b0b5e02ac247",
+      "name": "ajout du summary avec les autre spec"
     }
   ],
   "pinData": {},
@@ -849,7 +849,7 @@
             "index": 0
           },
           {
-            "node": "Merge",
+            "node": "ajout du summary avec les autre spec",
             "type": "main",
             "index": 0
           }
@@ -871,20 +871,9 @@
       "main": [
         [
           {
-            "node": "Merge",
+            "node": "ajout du summary avec les autre spec",
             "type": "main",
             "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -933,7 +922,7 @@
       "main": [
         [
           {
-            "node": "Merge1",
+            "node": "re merge de tout les résultat",
             "type": "main",
             "index": 0
           }
@@ -944,18 +933,29 @@
       "main": [
         [
           {
-            "node": "Merge1",
+            "node": "re merge de tout les résultat",
             "type": "main",
             "index": 1
           }
         ]
       ]
     },
-    "Merge1": {
+    "re merge de tout les résultat": {
       "main": [
         [
           {
             "node": "Synthèse finale avec LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ajout du summary avec les autre spec": {
+      "main": [
+        [
+          {
+            "node": "If",
             "type": "main",
             "index": 0
           }
