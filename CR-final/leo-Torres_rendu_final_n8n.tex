@@ -127,26 +127,26 @@ repo/
 \section{Bonus — Méthode de scoring}
 \subsection{Méthode utilisée}
 \begin{itemize}
-  \item Source : je me suis appuyee sur le document de reference present dans \texttt{docs/} (Kaklauskas et al., 2018, colonne Sj).
-  \item Analyse : j'ai derive un score comparable entre villes a partir de Sj pour obtenir une echelle 0--100 (plus lisible).
+  \item Source : table interne \texttt{CITY\_SENSITIVITY} avec des valeurs \textit{Sj} (en \%) par ville.
+  \item Calcul : transformation \textit{inverse min-max} pour obtenir un score 0--100 (plus lisible).
   \item Acces via MCP : outil \texttt{find\_city\_score} expose par le serveur MCP.
-  \item Normalisation : suppression d'accents, casse, ponctuation et alias courants (ex. \textit{Krakow}).
-  \item Valeurs manquantes : si la ville n'est pas trouvee, le MCP renvoie \texttt{found=false} et aucun score.
+  \item Correspondance : recherche insensible a la casse (ex. \textit{berlin} = \textit{Berlin}).
+  \item Valeurs manquantes : si la ville n'est pas dans la table, l'outil renvoie une erreur (pas de score).
 \end{itemize}
 
 Calcul utilise :
 \[
 \text{city\_score} = \left(1 - \frac{Sj - \min(Sj)}{\max(Sj) - \min(Sj)}\right) \times 100
 \]
-Ainsi, un Sj faible (forte concordance) donne un score plus eleve, tandis qu'un Sj eleve est penalise.
+Le score est arrondi a 2 decimales. Un Sj faible (forte concordance) donne un score plus eleve, tandis qu'un Sj eleve est penalise.
 
-Je me suis aidé de l'IA afin de trouver le calcul pour rendre le scorring plus lisible, précis et cohérent.
+Le calcul est implemente directement dans le serveur MCP.
 
 \subsection{Choix de scoring et justification}
 \begin{itemize}
   \item Pertinence : indicateur externe pour comparer rapidement l'attractivite des villes.
   \item Simplicite : table pre-calculée, sans besoin de recalcul complexe.
-  \item Robustesse : normalisation et aliases limitent les erreurs de correspondance.
+  \item Robustesse : le score est stable et ne depend pas des offres collecte es.
 \end{itemize}
 
 \subsection{Évaluation : est-ce que ça fonctionne comme attendu ?}
@@ -223,7 +223,7 @@ MAPPING RULES:
   - "internship" if stage/internship/intern
   - "apprenticeship" if alternance/apprenticeship
   - otherwise "unknown"
-- salary: keep original text (e.g. "800€/month", "$22k-$62k")
+- salary: keep original text (e.g. "800 EUR/month", "$22k-$62k")
 - currency: "EUR", "USD", "GBP" if clearly identifiable, else null
 
 INPUT:

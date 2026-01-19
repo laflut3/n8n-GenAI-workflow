@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        112,
-        176
+        -2464,
+        400
       ],
-      "id": "1b1eb86d-e11e-47a4-b9de-953b28f82d6e",
+      "id": "b666d046-bf4b-407f-a420-0abbe0c42121",
       "name": "When clicking ‘Execute workflow’"
     },
     {
@@ -25,14 +25,14 @@
       "type": "@tavily/n8n-nodes-tavily.tavily",
       "typeVersion": 1,
       "position": [
-        560,
-        176
+        -2016,
+        400
       ],
-      "id": "556a3682-0b52-4a48-9b43-155827ec2cba",
+      "id": "a1a44c09-7563-436c-b756-f4e87bd78298",
       "name": "Search",
       "credentials": {
         "tavilyApi": {
-          "id": "NYEI2c7RbX9YbOL0",
+          "id": "OxYudldPckyE2Jjg",
           "name": "Tavily account"
         }
       }
@@ -44,10 +44,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        320,
-        176
+        -2256,
+        400
       ],
-      "id": "aa7c426a-f8a3-4246-8dfe-c9231695b04f",
+      "id": "bd2882a5-9991-4102-abc1-6af06d655db6",
       "name": "Return combinations of cities and technology matrix"
     },
     {
@@ -86,10 +86,10 @@
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1,
       "position": [
-        768,
-        176
+        -1808,
+        400
       ],
-      "id": "e7c25fd1-456b-408b-9d66-a52a9239f06e",
+      "id": "4bd53f89-57f6-482f-a475-70c14179d00d",
       "name": "MCP Client"
     },
     {
@@ -119,14 +119,14 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        960,
-        176
+        -1616,
+        400
       ],
-      "id": "d77c4d5a-5846-4c10-a72c-a5027f03509b",
+      "id": "76329e8f-6256-4ca7-8fd5-7fcb9168d716",
       "name": "extract automatique des informations clés",
       "credentials": {
         "googlePalmApi": {
-          "id": "7MeBJ4wgngKGRZKn",
+          "id": "7VfNq9seZeEsJhXi",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -138,10 +138,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1776,
-        176
+        -800,
+        400
       ],
-      "id": "93cab2b1-9dbe-43c5-8e8a-e4c5825ee8b4",
+      "id": "c28398fc-8c0f-4096-9e28-c38e4a40b7fe",
       "name": "Parse with summary"
     },
     {
@@ -151,10 +151,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1280,
-        48
+        -1296,
+        272
       ],
-      "id": "70bd13b2-d353-47d3-9632-29b72074c426",
+      "id": "e3575a09-7712-4b45-886a-4b7af128f75c",
       "name": "parse extract"
     },
     {
@@ -166,10 +166,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2208,
-        64
+        -368,
+        288
       ],
-      "id": "f8dd67f4-d495-4ffa-aa32-ada9f36f48b8",
+      "id": "1b34ecf7-f472-4fbb-8567-b0b5e02ac247",
       "name": "Merge"
     },
     {
@@ -193,17 +193,17 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        1472,
-        176
+        -1104,
+        400
       ],
-      "id": "073821e1-5111-4888-b0c6-bfa7dc374791",
+      "id": "00eb75a5-056c-4b1a-ba27-130c9749f426",
       "name": "create summary",
       "retryOnFail": true,
       "maxTries": 5,
       "waitBetweenTries": 2000,
       "credentials": {
         "googlePalmApi": {
-          "id": "7MeBJ4wgngKGRZKn",
+          "id": "7VfNq9seZeEsJhXi",
           "name": "Google Gemini(PaLM) Api account"
         }
       },
@@ -218,10 +218,10 @@
       "type": "n8n-nodes-base.removeDuplicates",
       "typeVersion": 2,
       "position": [
-        1984,
-        176
+        -592,
+        400
       ],
-      "id": "1300ac5b-52cd-4f75-8b87-9e6d0c3ed714",
+      "id": "62f5ae7a-fbc4-4d7c-a312-5f42515d21b5",
       "name": "Remove Duplicates"
     },
     {
@@ -252,10 +252,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2416,
-        64
+        -160,
+        288
       ],
-      "id": "88f31344-b3e7-420f-81be-62fcf6d0027a",
+      "id": "bda00f95-7c5c-4634-89d2-39b89085219c",
       "name": "If"
     },
     {
@@ -466,14 +466,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2704,
-        -32
+        64,
+        192
       ],
-      "id": "bce8753d-9da0-4e50-b709-366cf7a91083",
+      "id": "4ee3ecf6-ec2e-43f6-8e03-050ded6dca2b",
       "name": "save row true",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "H3egBBHQnp2i7QKh",
+          "id": "YEPk1JpIhQ2493Ol",
           "name": "Google Sheets account"
         }
       }
@@ -686,14 +686,14 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2704,
-        160
+        64,
+        384
       ],
-      "id": "e688d261-185e-4561-bed2-717605c82f89",
+      "id": "a1ee0bf9-d7dd-4731-adf6-33e8b7122e1e",
       "name": "save row false",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "H3egBBHQnp2i7QKh",
+          "id": "YEPk1JpIhQ2493Ol",
           "name": "Google Sheets account"
         }
       }
@@ -702,9 +702,9 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "models/gemma-3n-e2b-it",
+          "value": "models/gemini-robotics-er-1.5-preview",
           "mode": "list",
-          "cachedResultName": "models/gemma-3n-e2b-it"
+          "cachedResultName": "models/gemini-robotics-er-1.5-preview"
         },
         "messages": {
           "values": [
@@ -719,14 +719,14 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        2576,
-        -224
+        464,
+        288
       ],
-      "id": "a6e521d9-fa7a-4f0b-af74-d5e7efd0c1fd",
+      "id": "6e791690-a2c5-4d02-a072-b396b0f5d071",
       "name": "Synthèse finale avec LLM",
       "credentials": {
         "googlePalmApi": {
-          "id": "7MeBJ4wgngKGRZKn",
+          "id": "7VfNq9seZeEsJhXi",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -740,18 +740,12 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        3136,
-        -224
+        992,
+        288
       ],
-      "id": "95ed7855-1de7-4f77-b8f3-e1cc27174040",
+      "id": "82e37c95-3896-442c-83df-af5414acfc8b",
       "name": "Discord",
-      "webhookId": "dba46f4a-05ee-44f5-b44d-c8e4c0c310eb",
-      "credentials": {
-        "discordWebhookApi": {
-          "id": "QfTI068IwD67dqjC",
-          "name": "Discord Webhook account"
-        }
-      }
+      "webhookId": "dba46f4a-05ee-44f5-b44d-c8e4c0c310eb"
     },
     {
       "parameters": {
@@ -760,11 +754,22 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2928,
-        -224
+        784,
+        288
       ],
-      "id": "845eec95-79c8-42a1-872a-2b27716c879e",
+      "id": "811c67d3-eeb3-40cd-bc87-4c84b4c22534",
       "name": "prepare message"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        288,
+        288
+      ],
+      "id": "3cb22dab-fecf-408a-a588-175c33d7ad74",
+      "name": "Merge1"
     }
   ],
   "pinData": {},
@@ -880,11 +885,6 @@
             "node": "If",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "Synthèse finale avec LLM",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -905,11 +905,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "save row true": {
-      "main": [
-        []
       ]
     },
     "Synthèse finale avec LLM": {
@@ -933,6 +928,39 @@
           }
         ]
       ]
+    },
+    "save row true": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save row false": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Synthèse finale avec LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -940,11 +968,10 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "c3e92ac1-1437-44c4-9ca6-d6549f332cf2",
+  "versionId": "285f56f5-bbe4-45ad-9115-66e4c75ae8ca",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "532f13d6ae3c236eb0c38d637f129542a44778c8189e0ba2b57e1ef8423c05d2"
+    "instanceId": "ddbebfcca13e069bd55489cb170b45cca00803c7c83d305f7ad693957ce4b499"
   },
-  "id": "srAg6LsOmCgpOF2nubH2p",
+  "id": "cgi2hWZbFHhclkMlB0cm4",
   "tags": []
 }
