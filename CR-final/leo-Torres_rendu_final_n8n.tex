@@ -126,21 +126,8 @@ repo/
 % =========================
 \section{Bonus — Méthode de scoring}
 \subsection{Méthode utilisée}
-\begin{itemize}
-  \item Source : table interne \texttt{CITY\_SENSITIVITY} avec des valeurs \textit{Sj} (en \%) par ville.
-  \item Calcul : transformation \textit{inverse min-max} pour obtenir un score 0--100 (plus lisible).
-  \item Acces via MCP : outil \texttt{find\_city\_score} expose par le serveur MCP.
-  \item Correspondance : recherche insensible a la casse (ex. \textit{berlin} = \textit{Berlin}).
-  \item Valeurs manquantes : si la ville n'est pas dans la table, l'outil renvoie une erreur (pas de score).
-\end{itemize}
+Le scoring repose sur un service MCP local qui expose une table statique \texttt{CITY\_SENSITIVITY} (0–100). Pour chaque ville de la matrice, le workflow appelle \texttt{find\_city\_score(city\_name)}. La fonction effectue une recherche insensible a la casse, renvoie \texttt{sensitivity\_percent} si la ville est connue, sinon une erreur et le score est laisse a \texttt{null}. Ce score est ensuite injecte dans le champ \texttt{city\_score} des offres (export CSV et synthese) afin d'apporter un signal rapide d'attractivite sans dependre des donnees extraites.
 
-Calcul utilise :
-\[
-\text{city\_score} = \left(1 - \frac{Sj - \min(Sj)}{\max(Sj) - \min(Sj)}\right) \times 100
-\]
-Le score est arrondi a 2 decimales. Un Sj faible (forte concordance) donne un score plus eleve, tandis qu'un Sj eleve est penalise.
-
-Le calcul est implemente directement dans le serveur MCP.
 
 \subsection{Choix de scoring et justification}
 \begin{itemize}
