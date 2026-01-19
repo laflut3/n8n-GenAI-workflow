@@ -42,20 +42,6 @@ CITY_SENSITIVITY: Dict[str, float] = {
     "Constanta": 91.10
 }
 
-
-def _min_max(values: List[float]) -> Dict[str, float]:
-    min_val = min(values)
-    max_val = max(values)
-    return {"min": min_val, "max": max_val}
-
-
-def _inverse_min_max_score(value: float, min_val: float, max_val: float) -> float:
-    if max_val == min_val:
-        return 100.0
-    normalized = (value - min_val) / (max_val - min_val)
-    return round((1.0 - normalized) * 100.0, 2)
-
-
 @mcp.tool()
 def find_city_score(city_name: str) -> Dict:
     """
@@ -69,12 +55,9 @@ def find_city_score(city_name: str) -> Dict:
     if not key:
         raise ValueError(f"City '{city_name}' not found")
 
-    stats = _min_max(list(CITY_SENSITIVITY.values()))
-    raw = CITY_SENSITIVITY[key]
     return {
         "city": key,
-        "sensitivity_percent": raw,
-        "city_score": _inverse_min_max_score(raw, stats["min"], stats["max"]),
+        "sensitivity_percent": CITY_SENSITIVITY[key]
     }
 
 
@@ -88,7 +71,6 @@ def list_cities(
     List cities with sensitivity analysis values.
     """
     results = []
-    stats = _min_max(list(CITY_SENSITIVITY.values()))
 
     for city, value in CITY_SENSITIVITY.items():
         if min_value is not None and value < min_value:
@@ -98,12 +80,11 @@ def list_cities(
 
         results.append({
             "city": city,
-            "sensitivity_percent": value,
-            "city_score": _inverse_min_max_score(value, stats["min"], stats["max"]),
+            "sensitivity_percent": value
         })
 
     results.sort(
-        key=lambda x: x["city_score"],
+        key=lambda x: x["sensitivity_percent"],
         reverse=sort_desc
     )
 

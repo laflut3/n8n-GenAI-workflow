@@ -140,7 +140,7 @@ Calcul utilise :
 \]
 Ainsi, un Sj faible (forte concordance) donne un score plus eleve, tandis qu'un Sj eleve est penalise.
 
-Je me suis aidé de l'IA afin de trouver le calcul pour rendre le calcul plus lisible, précis et cohérent.
+Je me suis aidé de l'IA afin de trouver le calcul pour rendre le scorring plus lisible, précis et cohérent.
 
 \subsection{Choix de scoring et justification}
 \begin{itemize}
@@ -223,8 +223,20 @@ MAPPING RULES:
   - "internship" if stage/internship/intern
   - "apprenticeship" if alternance/apprenticeship
   - otherwise "unknown"
-- salary: keep original text
+- salary: keep original text (e.g. "800€/month", "$22k-$62k")
 - currency: "EUR", "USD", "GBP" if clearly identifiable, else null
+
+INPUT:
+You will receive a JSON object containing offers in an array field. Use:
+- offers = input.result OR input.results (whichever exists)
+
+Input JSON :
+{
+  "city": string,
+  "sensitivity_percent": number,
+}
+
+-------------------------------------------------------------------------------------------
 
 Prompt de resume (Gemini) :
 Generate a short readable summary for each extracted offer.
@@ -246,47 +258,61 @@ SUMMARY RULES:
 - If a field is missing, omit it (do not guess).
 - Write the summary in French.
 
-Prompt de synthese finale (Gemini) :
-Tu es un assistant charge de produire un rapport clair et synthetique
-a partir d'une liste d'offres de stage.
+INPUT JSON (array of extracted offers):
+[
+  {
+    "company": "crypto",
+    "job_title": "Director of Venture Studio",
+    "city": "Berlin",
+    "country": "Germany",
+    "remote_policy": "unknown",
+    "contract_type": "internship",
+    "salary": null,
+    "currency": null,
+    "duration": null,
+    "application_deadline": null,
+    "skills": [],
+    "languages": [],
+    "source_url": "https://www.linkedin.com/jobs/crypto-jobs-berlin?countryRedirected=1",
+    "source_title": "95 Crypto jobs in Berlin, Berlin, Germany (1 new)",
+    "city_score": 0.99972624
+  },
+  ...
+]
 
-Ta tache :
-1) Un titre : "Synthese des offres de stage"
-2) Le nombre total d'offres pertinentes trouvees
-3) Le Top 3 des meilleures offres avec pour chacune :
-   - entreprise
-   - poste
-   - ville
-   - pourquoi elle est interessante (1 a 2 phrases max)
-4) Des statistiques globales :
-   - Villes les plus frequentes
-   - Types de contrats dominants
-   - Remote vs onsite vs hybride
-   - Salaires observes (si presents)
-5) Une conclusion courte (2-3 phrases) sur la qualite globale des offres
-\end{lstlisting}
-
-\subsection{Exemple de sortie JSON complète}
-Exemple synthetique (format complet) :
-\begin{lstlisting}
+OUTPUT SCHEMA (per item):
 {
-  "company": "Example Corp",
-  "job_title": "DevOps Intern",
-  "city": "Berlin",
-  "country": "Germany",
-  "remote_policy": "hybrid",
-  "contract_type": "internship",
-  "salary": "1200 EUR/month",
-  "currency": "EUR",
-  "duration": "6 months",
-  "application_deadline": null,
-  "skills": ["linux", "docker", "kubernetes"],
-  "languages": ["english"],
-  "source_url": "https://example.com/job",
-  "source_title": "DevOps Internship - Example Corp",
-  "city_score": 92.68,
-  "summary": "Example Corp propose un stage DevOps a Berlin en mode hybride..."
+  "source_url": string|null,
+  "summary": string
 }
+
+-------------------------------------------------------------------------------------------
+
+Prompt de synthese finale (Gemini) :
+You are a report writer for internship search results.
+
+STRICT RULES:
+- Output ONLY plain text. No JSON, no markdown, no commentary.
+- Write in French.
+- Keep the message under 1900 characters.
+- Do not invent numbers or facts.
+
+INPUT:
+You will receive a JSON array of extracted offers. Each item may include:
+company, job_title, city, country, remote_policy, contract_type, salary, currency, duration, application_deadline, skills, languages, source_url, source_title, city_score, summary.
+
+OUTPUT FORMAT:
+- Title on the first line.
+- Then 3 to 5 short paragraphs:
+  1) Nombre total d'offres valides.
+  2) Top 3 des offres les plus interessantes avec 1 phrase de justification chacune (score ville, salaire, remote, contrat, pertinence tech).
+  3) Statistiques globales (villes les plus presentes, types de contrats, remote, salaires disponibles).
+
+RULES:
+- If fewer than 3 offers, list all.
+- If a field is missing, skip it.
+- Use source_url only if needed to disambiguate.
+
 \end{lstlisting}
 
 \end{document}

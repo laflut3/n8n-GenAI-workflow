@@ -93,6 +93,17 @@ Colonnes ecrites:
 `currency`, `duration`, `application_deadline`, `skills`, `languages`,
 `source_url`, `source_title`, `city_score`, `summary`, `remote_policy`
 
+## A creer dans Google Sheets (avant execution)
+1. Creer un nouveau fichier Google Sheets (ex: `Internships`).
+2. Creer deux onglets avec exactement ces noms:
+   - `Results true`
+   - `result false`
+3. Ajouter en ligne 1 les en-tetes de colonnes suivants (dans cet ordre ou mapping manuel identique):
+   `company`, `job_title`, `contract_type`, `city`, `country`, `salary`,
+   `currency`, `duration`, `application_deadline`, `skills`, `languages`,
+   `source_url`, `source_title`, `city_score`, `summary`, `remote_policy`
+4. Dans n8n, selectionner ce fichier et ces onglets dans les nodes **save row true** et **save row false**.
+
 ## Structure du projet
 - `workflow-final.json`: workflow final n8n
 - `Dockerfile.mcp`: image du serveur MCP
