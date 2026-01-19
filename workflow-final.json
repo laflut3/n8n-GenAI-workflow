@@ -1,0 +1,950 @@
+{
+  "name": "Find an internship abroad",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        112,
+        176
+      ],
+      "id": "1b1eb86d-e11e-47a4-b9de-953b28f82d6e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "query": "=company {{ $json.technology }} {{ $json.city }} internship",
+        "options": {
+          "search_depth": "basic",
+          "chunks_per_source": 1,
+          "max_results": 2,
+          "country": ""
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavily",
+      "typeVersion": 1,
+      "position": [
+        560,
+        176
+      ],
+      "id": "556a3682-0b52-4a48-9b43-155827ec2cba",
+      "name": "Search",
+      "credentials": {
+        "tavilyApi": {
+          "id": "NYEI2c7RbX9YbOL0",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cities = [\n  {\"city\": \"Berlin\"},\n  {\"city\": \"Stockholm\"},\n]\n\nconst technologies = [\n  {\"technology\": \"crypto\"},\n  {\"technology\": \"devops\"},\n  {\"technology\": \"cybersecurity\"},\n  {\"technology\": \"iot\"}\n]\n\nconst combinations = cities.flatMap(cityObj => {\n  return technologies.map(techObj => ({\n    city: cityObj.city,\n    technology: techObj.technology\n  }));\n});\n\nreturn combinations;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        176
+      ],
+      "id": "aa7c426a-f8a3-4246-8dfe-c9231695b04f",
+      "name": "Return combinations of cities and technology matrix"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://mcp:8000/mcp",
+        "tool": {
+          "__rl": true,
+          "value": "find_city_score",
+          "mode": "list",
+          "cachedResultName": "find_city_score"
+        },
+        "parameters": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "city_name": "={{ $('Return combinations of cities and technology matrix').item.json.city }}"
+          },
+          "matchingColumns": [
+            "city_name"
+          ],
+          "schema": [
+            {
+              "id": "city_name",
+              "displayName": "City Name",
+              "defaultMatch": false,
+              "required": true,
+              "display": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1,
+      "position": [
+        768,
+        176
+      ],
+      "id": "e7c25fd1-456b-408b-9d66-a52a9239f06e",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemma-3-4b-it",
+          "mode": "list",
+          "cachedResultName": "models/gemma-3-4b-it"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a job-offer information extractor.\n\nSTRICT RULES:\n- Output ONLY valid JSON. No markdown, no commentary, no surrounding text.\n- Do NOT invent. If a value is not explicitly present, use null.\n- Empty lists must be [].\n- Extract ONE output object per offer in the input array, preserving the same order and length.\n\nOUTPUT FORMAT:\nReturn a JSON array of objects. Each object must follow EXACTLY this schema:\n\n{\n  \"company\": string|null,\n  \"job_title\": string|null,\n  \"city\": string|null,\n  \"country\": string|null,\n  \"remote_policy\": \"onsite\"|\"hybrid\"|\"remote\"|\"unknown\"|null,\n  \"contract_type\":   \"internship\"|\"apprenticeship\"|\"full_time\"|\"part_time\"|\"unknown\"|null,\n  \"salary\": string|null,\n  \"currency\": string|null,\n  \"duration\": string|null,\n  \"application_deadline\": string|null,\n  \"skills\": string[],\n  \"languages\": string[],\n  \"source_url\": string|null,\n  \"source_title\": string|null,\n  \"city_score\": number|null\n}\n\nMAPPING RULES:\n- source_url = offer.url if present, else null\n- source_title = offer.title if present, else null\n- city_score = offer.score if present, else use input.search_score if provided, else null\n- remote_policy:\n  - \"remote\" if clearly remote\n  - \"hybrid\" if clearly hybrid\n  - \"onsite\" if clearly onsite/on-site\n  - otherwise \"unknown\"\n- contract_type:\n  - \"internship\" if stage/internship/intern\n  - \"apprenticeship\" if alternance/apprenticeship\n  - otherwise \"unknown\"\n- salary: keep original text (e.g. \"800€/month\", \"$22k-$62k\")\n- currency: \"EUR\", \"USD\", \"GBP\" if clearly identifiable, else null\n\nINPUT:\nYou will receive a JSON object containing offers in an array field. Use:\n- offers = input.result OR input.results (whichever exists)\n\nInput JSON:\n{{  JSON.stringify($json.content) }}\n{{ $('Search').item.json.query }} : {{ JSON.stringify($('Search').item.json.results) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "frequencyPenalty": 0,
+          "maxOutputTokens": 2000,
+          "candidateCount": 1,
+          "topP": 1,
+          "topK": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        176
+      ],
+      "id": "d77c4d5a-5846-4c10-a72c-a5027f03509b",
+      "name": "extract automatique des informations clés",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7MeBJ4wgngKGRZKn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code node\n * Objectif:\n * - Parser la sortie LLM (souvent dans content.parts[0].text, parfois avec ```json ... ```).\n * - Ne JAMAIS perdre d'item: 1 item en entrée => 1 item en sortie.\n * - Si summary manquant/vide => \"Aucune description possible pour cette fiche de poste.\"\n * - Conserve source_url si dispo, sinon tente de le récupérer depuis l'input (ex: item.json.source_url).\n */\n\nfunction cleanJsonText(s) {\n  if (s == null) return \"\";\n  s = String(s);\n\n  // Remove markdown fences (```json ... ```)\n  s = s.replace(/```json\\s*/i, \"```\");\n  s = s.replace(/```/g, \"\");\n  s = s.trim();\n\n  // Trim garbage before first { or [\n  const firstBrace = s.indexOf(\"{\");\n  const firstBracket = s.indexOf(\"[\");\n  let start = -1;\n  if (firstBrace === -1) start = firstBracket;\n  else if (firstBracket === -1) start = firstBrace;\n  else start = Math.min(firstBrace, firstBracket);\n\n  if (start > 0) s = s.slice(start).trim();\n\n  // Trim garbage after last } or ]\n  const lastBrace = s.lastIndexOf(\"}\");\n  const lastBracket = s.lastIndexOf(\"]\");\n  const end = Math.max(lastBrace, lastBracket);\n  if (end !== -1) s = s.slice(0, end + 1).trim();\n\n  return s;\n}\n\nfunction pickText(itemJson) {\n  return (\n    itemJson?.content?.parts?.[0]?.text ??\n    itemJson?.parts?.[0]?.text ??\n    itemJson?.text ??\n    \"\"\n  );\n}\n\nfunction pickSourceUrl(itemJson) {\n  return (\n    itemJson?.source_url ??\n    itemJson?.sourceUrl ??\n    itemJson?.url ??\n    itemJson?.source?.url ??\n    null\n  );\n}\n\nconst FALLBACK_SUMMARY = \"Aucune description possible pour cette fiche de poste.\";\n\nconst inputItems = $input.all();\nconst out = [];\n\nfor (const item of inputItems) {\n  const j = item.json ?? {};\n\n  // Cas 1: le node LLM a retourné une erreur (service unavailable, etc.)\n  if (j.error) {\n    out.push({\n      json: {\n        source_url: pickSourceUrl(j),\n        summary: FALLBACK_SUMMARY,\n        llm_error: String(j.error),\n      },\n    });\n    continue;\n  }\n\n  const rawText = pickText(j);\n  const cleaned = cleanJsonText(rawText);\n\n  // Cas 2: pas de texte exploitable (vide)\n  if (!cleaned) {\n    out.push({\n      json: {\n        source_url: pickSourceUrl(j),\n        summary: FALLBACK_SUMMARY,\n        parse_error: \"empty_response\",\n        raw: rawText,\n      },\n    });\n    continue;\n  }\n\n  // Cas 3: JSON valide ou non\n  let parsed;\n  try {\n    parsed = JSON.parse(cleaned);\n  } catch (e) {\n    out.push({\n      json: {\n        source_url: pickSourceUrl(j),\n        summary: FALLBACK_SUMMARY,\n        parse_error: String(e),\n        raw: rawText,\n        cleaned,\n      },\n    });\n    continue;\n  }\n\n  /**\n   * Attendu: soit\n   * - un tableau: [ { source_url, summary }, ... ]\n   * - soit un objet: { source_url, summary }\n   *\n   * Pour garantir 1 entrée => 1 sortie:\n   * - si tableau: on prend le premier élément\n   * - si objet: on le prend\n   * - sinon: fallback\n   */\n  let obj = null;\n\n  if (Array.isArray(parsed)) {\n    obj = parsed.length > 0 && parsed[0] && typeof parsed[0] === \"object\" ? parsed[0] : null;\n  } else if (parsed && typeof parsed === \"object\") {\n    obj = parsed;\n  }\n\n  const source_url = (obj?.source_url ?? pickSourceUrl(j) ?? null);\n  let summary = obj?.summary;\n\n  if (summary == null) summary = \"\";\n  summary = String(summary).trim();\n  if (!summary) summary = FALLBACK_SUMMARY;\n\n  out.push({\n    json: {\n      source_url,\n      summary,\n    },\n  });\n}\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        176
+      ],
+      "id": "93cab2b1-9dbe-43c5-8e8a-e4c5825ee8b4",
+      "name": "Parse with summary"
+    },
+    {
+      "parameters": {
+        "jsCode": "function cleanJsonText(s) {\n  if (s == null) return \"\";\n  s = String(s);\n\n  s = s.replace(/```json\\s*/i, \"```\");\n  s = s.replace(/```/g, \"\");\n\n  s = s.trim();\n\n  const firstBrace = s.indexOf(\"{\");\n  const firstBracket = s.indexOf(\"[\");\n  let start = -1;\n  if (firstBrace === -1) start = firstBracket;\n  else if (firstBracket === -1) start = firstBrace;\n  else start = Math.min(firstBrace, firstBracket);\n\n  if (start > 0) s = s.slice(start).trim();\n\n  // coupe après le dernier } ou ]\n  const lastBrace = s.lastIndexOf(\"}\");\n  const lastBracket = s.lastIndexOf(\"]\");\n  const end = Math.max(lastBrace, lastBracket);\n  if (end !== -1) s = s.slice(0, end + 1).trim();\n\n  return s;\n}\n\nfunction normalizeOffer(o) {\n  return {\n    company: o.company ?? null,\n    job_title: o.job_title ?? null,\n    city: o.city ?? null,\n    country: o.country ?? null,\n    remote_policy: o.remote_policy ?? null,\n    contract_type: o.contract_type ?? null,\n    salary: o.salary ?? null,\n    currency: o.currency ?? null,\n    duration: o.duration ?? null,\n    application_deadline: o.application_deadline ?? null,\n    skills: Array.isArray(o.skills) ? o.skills : [],\n    languages: Array.isArray(o.languages) ? o.languages : [],\n    source_url: o.source_url ?? null,\n    source_title: o.source_title ?? null,\n    city_score: (typeof o.city_score === \"number\") ? o.city_score : null,\n    // summary sera ajouté plus tard\n  };\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const txt =\n    item.json?.content?.parts?.[0]?.text ??\n    item.json?.parts?.[0]?.text ??\n    item.json?.text ??\n    \"\";\n\n  const cleaned = cleanJsonText(txt);\n  if (!cleaned) continue;\n\n  let parsed;\n  try {\n    parsed = JSON.parse(cleaned);\n  } catch (e) {\n    // si ça échoue, on sort un item debug minimal\n    out.push({ json: { parse_error: String(e), raw: txt } });\n    continue;\n  }\n\n  const arr = Array.isArray(parsed) ? parsed : [parsed];\n  for (const o of arr) out.push({ json: normalizeOffer(o) });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        48
+      ],
+      "id": "70bd13b2-d353-47d3-9632-29b72074c426",
+      "name": "parse extract"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "source_url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2208,
+        64
+      ],
+      "id": "f8dd67f4-d495-4ffa-aa32-ada9f36f48b8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemma-3-27b-it",
+          "mode": "list",
+          "cachedResultName": "models/gemma-3-27b-it"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Generate a short readable summary for each extracted offer.\n\nSTRICT RULES:\n- Output ONLY valid JSON. No markdown, no commentary.\n- Return a JSON array with the same length/order as the input array.\n- Do not include any other keys.\n\nOUTPUT SCHEMA (per item):\n{\n  \"source_url\": string|null,\n  \"summary\": string\n}\n\nSUMMARY RULES:\n- 2 to 3 sentences maximum.\n- Include: company (if known), role, location, remote policy, contract type, and salary if present.\n- If a field is missing, omit it (do not guess).\n- Write the summary in French.\n\nINPUT JSON (array of extracted offers):\n{{ JSON.stringify($json) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1472,
+        176
+      ],
+      "id": "073821e1-5111-4888-b0c6-bfa7dc374791",
+      "name": "create summary",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7MeBJ4wgngKGRZKn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "source_url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        176
+      ],
+      "id": "1300ac5b-52cd-4f75-8b87-9e6d0c3ed714",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "18f9c062-20b8-401f-ab07-97e3641ffb57",
+              "leftValue": "={{ $json.salary }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2416,
+        64
+      ],
+      "id": "88f31344-b3e7-420f-81be-62fcf6d0027a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A",
+          "mode": "list",
+          "cachedResultName": "Internships",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Results true",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "company": "={{ $json.company }}",
+            "job_title": "={{ $json.job_title }}",
+            "contract_type": "={{ $json.contract_type }}",
+            "city": "={{ $json.city }}",
+            "country": "={{ $json.country }}",
+            "salary": "={{ $json.salary }}",
+            "currency": "={{ $json.currency }}",
+            "duration": "={{ $json.duration }}",
+            "application_deadline": "={{ $json.application_deadline }}",
+            "skills": "={{ $json.skills }}",
+            "languages": "={{ $json.languages }}",
+            "source_url": "={{ $json.source_url }}",
+            "source_title": "={{ $json.source_title }}",
+            "city_score": "={{ $json.city_score }}",
+            "summary": "={{ $json.summary }}",
+            "remote_policy": "={{ $json.remote_policy }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "job_title",
+              "displayName": "job_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "city",
+              "displayName": "city",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "remote_policy",
+              "displayName": "remote_policy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contract_type",
+              "displayName": "contract_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "salary",
+              "displayName": "salary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "application_deadline",
+              "displayName": "application_deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "skills",
+              "displayName": "skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "languages",
+              "displayName": "languages",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_url",
+              "displayName": "source_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_title",
+              "displayName": "source_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "city_score",
+              "displayName": "city_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2704,
+        -32
+      ],
+      "id": "bce8753d-9da0-4e50-b709-366cf7a91083",
+      "name": "save row true",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "H3egBBHQnp2i7QKh",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A",
+          "mode": "list",
+          "cachedResultName": "Internships",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 504196108,
+          "mode": "list",
+          "cachedResultName": "result false",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A/edit#gid=504196108"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "company": "={{ $json.company }}",
+            "job_title": "={{ $json.job_title }}",
+            "contract_type": "={{ $json.contract_type }}",
+            "city": "={{ $json.city }}",
+            "country": "={{ $json.country }}",
+            "salary": "={{ $json.salary }}",
+            "currency": "={{ $json.currency }}",
+            "duration": "={{ $json.duration }}",
+            "application_deadline": "={{ $json.application_deadline }}",
+            "skills": "={{ $json.skills }}",
+            "languages": "={{ $json.languages }}",
+            "source_url": "={{ $json.source_url }}",
+            "source_title": "={{ $json.source_title }}",
+            "city_score": "={{ $json.city_score }}",
+            "summary": "={{ $json.summary }}",
+            "remote_policy": "={{ $json.remote_policy }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "job_title",
+              "displayName": "job_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "city",
+              "displayName": "city",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "remote_policy",
+              "displayName": "remote_policy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contract_type",
+              "displayName": "contract_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "salary",
+              "displayName": "salary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "application_deadline",
+              "displayName": "application_deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "skills",
+              "displayName": "skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "languages",
+              "displayName": "languages",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_url",
+              "displayName": "source_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_title",
+              "displayName": "source_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "city_score",
+              "displayName": "city_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2704,
+        160
+      ],
+      "id": "e688d261-185e-4561-bed2-717605c82f89",
+      "name": "save row false",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "H3egBBHQnp2i7QKh",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemma-3n-e2b-it",
+          "mode": "list",
+          "cachedResultName": "models/gemma-3n-e2b-it"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Tu es un assistant chargé de produire un rapport clair et synthétique à partir d'une liste d'offres de stage.\n\nVoici la liste complète des offres (JSON) :\n{{ JSON.stringify($input.all().map(i => i.json), null, 2) }}\n\nTa tâche :\nRédige un rapport structuré en texte naturel comprenant :\n\n1) Un titre : \"Synthèse des offres de stage\"\n2) Le nombre total d'offres pertinentes trouvées\n3) Le Top 3 des meilleures offres avec pour chacune :\n   - entreprise\n   - poste\n   - ville\n   - pourquoi elle est intéressante (1 à 2 phrases max)\n4) Des statistiques globales :\n   - Villes les plus fréquentes\n   - Types de contrats dominants\n   - Remote vs onsite vs hybride\n   - Salaires observés (si présents)\n5) Une conclusion courte (2-3 phrases) sur la qualité globale des offres\n\nRègles :\n- Utilise uniquement les données fournies\n- N'invente rien\n- Le résultat doit être propre, structuré et directement lisible par un humain\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2576,
+        -224
+      ],
+      "id": "a6e521d9-fa7a-4f0b-af74-d5e7efd0c1fd",
+      "name": "Synthèse finale avec LLM",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7MeBJ4wgngKGRZKn",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        3136,
+        -224
+      ],
+      "id": "95ed7855-1de7-4f77-b8f3-e1cc27174040",
+      "name": "Discord",
+      "webhookId": "dba46f4a-05ee-44f5-b44d-c8e4c0c310eb",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "QfTI068IwD67dqjC",
+          "name": "Discord Webhook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const first = $input.first().json;\n\n// récupère le texte du LLM (cas Gemini: content.parts[0].text)\nconst text =\n  first?.content?.parts?.[0]?.text\n  ?? first?.text\n  ?? \"\";\n\n// tronque pour respecter Discord (<= 2000)\nconst maxLen = 1900;\nconst out = text.length > maxLen\n  ? text.slice(0, maxLen) + \"\\n\\n(…message tronqué)\"\n  : text;\n\nreturn [{ json: { message: out } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2928,
+        -224
+      ],
+      "id": "845eec95-79c8-42a1-872a-2b27716c879e",
+      "name": "prepare message"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Return combinations of cities and technology matrix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search": {
+      "main": [
+        [
+          {
+            "node": "MCP Client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return combinations of cities and technology matrix": {
+      "main": [
+        [
+          {
+            "node": "Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "main": [
+        [
+          {
+            "node": "extract automatique des informations clés",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract automatique des informations clés": {
+      "main": [
+        [
+          {
+            "node": "parse extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse with summary": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse extract": {
+      "main": [
+        [
+          {
+            "node": "create summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create summary": {
+      "main": [
+        [
+          {
+            "node": "Parse with summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Synthèse finale avec LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "save row true",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "save row false",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save row true": {
+      "main": [
+        []
+      ]
+    },
+    "Synthèse finale avec LLM": {
+      "main": [
+        [
+          {
+            "node": "prepare message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepare message": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c3e92ac1-1437-44c4-9ca6-d6549f332cf2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "532f13d6ae3c236eb0c38d637f129542a44778c8189e0ba2b57e1ef8423c05d2"
+  },
+  "id": "srAg6LsOmCgpOF2nubH2p",
+  "tags": []
+}

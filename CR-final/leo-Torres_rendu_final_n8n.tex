@@ -1,0 +1,292 @@
+% !TEX program = pdflatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+
+\usepackage{graphicx}
+\usepackage{ifthen}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny,
+  tabsize=2
+}
+
+\title{Compte rendu — Workflow n8n : Recherche de stages à l’étranger}
+\author{Leo Torres \quad — \quad DO3}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% =========================
+\section{Contexte et objectifs}
+\subsection{Objectif du projet}
+Le workflow automatise la recherche d'offres de stage a l'etranger a partir d'une matrice \textit{ville × technologie}. Les resultats sont enrichis par un score de ville (MCP), normalises par LLM, dedoublonnes, puis exportes vers Google Sheets et resumes dans une synthese envoyee sur Discord.
+
+\subsection{Périmètre et hypothèses}
+\begin{itemize}
+  \item Villes : Berlin, Stockholm.
+  \item Technologies : crypto, devops, cybersecurity, iot (8 combinaisons).
+  \item Source principale : recherche web via Tavily (1 resultat par requete).
+  \item LLM : Google Gemini (gemma-3-4b-it pour extraction, gemma-3-27b-it pour resume, gemini-robotics-er-1.5-preview pour synthese) (à changé en fonction de la dispo des quotas gratuit).
+  \item Limites : dependance aux API, champs souvent absents (salaire, remote), redondances d'URLs.
+\end{itemize}
+
+% =========================
+\section{Architecture du workflow n8n}
+\subsection{Vue d’ensemble du workflow}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/workflow_complet.png}
+  \caption{Workflow n8n complet.}
+\end{figure}
+
+\subsection{Description des étapes}
+
+\subsubsection{Étape 1 — Génération des combinaisons ville × technologie}
+Un node Code genere les couples ville x technologie a partir de deux tableaux statiques.
+
+\subsubsection{Étape 2 — Recherche web (Tavily)}
+Chaque couple declenche une recherche Tavily avec la requete type \texttt{company <tech> <city> internship}. La recherche est en \texttt{basic}, avec \texttt{max\_results=2}.
+
+\subsubsection{Étape 3 — Enrichissement scoring via MCP}
+Le MCP Client appelle l'outil \texttt{find\_city\_score} avec le nom de ville. Si la ville est connue, un score est renvoye et ajoute aux donnees d'entree; sinon le score est absent et le MCP indique \texttt{found=false}.
+
+\subsubsection{Étape 4 — Extraction d’informations via LLM}
+Le LLM retourne un JSON strict, sans texte additionnel, conforme a un schema fixe (company, job\_title, city, country, remote\_policy, contract\_type, salary, currency, duration, application\_deadline, skills, languages, source\_url, source\_title, city\_score). Les valeurs manquantes sont forcees a \texttt{null}.
+
+\subsubsection{Étape 5 — Génération des résumés via LLM}
+Un second LLM produit un resume FR de 2 a 3 phrases par offre. Les sorties non-JSON sont nettoyees et parsees dans un node Code.
+
+\subsubsection{Étape 6 — Filtrage personnalisé}
+Le filtrage est minimal : dedoublonnage par \texttt{source\_url}, puis routage selon la presence d'un salaire pour separer deux onglets de stockage.
+
+\subsubsection{Étape 7 — Export des résultats}
+Les offres sont ecrites dans Google Sheets (equivalent CSV), dans deux onglets en fonction du filtre (pour les offres ok selon le filtre et pour les autres). Colonnes : company, job\_title, contract\_type, city, country, salary, currency, duration, application\_deadline, skills, languages, source\_url, source\_title, city\_score, summary, remote\_policy.
+
+\subsubsection{Étape 8 — Synthèse finale}
+Un LLM genere une synthese lisible avec un titre, le nombre d'offres, un top 3 argumente et des statistiques globales (villes, contrats, remote, salaires).
+
+\subsubsection{Étape 9 — Notification}
+La synthese est envoyee sur Discord via webhook. Un node Code tronque le message a 1900 caracteres pour respecter la limite.
+
+% =========================
+\section{Exemples de résultats}
+\subsection{Offres extraites (5 à 10 exemples)}
+Exemple de 5 a 10 offres extraites (toutes les infos dans le JSON) :
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/exemple_offres_json.png}
+  \caption{Exemple de 5–10 offres extraites (JSON).}
+\end{figure}
+
+\subsection{Fichier CSV exporté (ou capture)}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/export_resultats.png}
+  \caption{Aperçu de l’export CSV / Google Sheets.}
+\end{figure}
+
+\subsection{Workflow n8n (JSON) dans le repo}
+\begin{lstlisting}
+repo/
+  workflow-final.json
+\end{lstlisting}
+
+% =========================
+\section{Bonus — Méthode de scoring}
+\subsection{Méthode utilisée}
+\begin{itemize}
+  \item Source : je me suis appuyee sur le document de reference present dans \texttt{docs/} (Kaklauskas et al., 2018, colonne Sj).
+  \item Analyse : j'ai derive un score comparable entre villes a partir de Sj pour obtenir une echelle 0--100 (plus lisible).
+  \item Acces via MCP : outil \texttt{find\_city\_score} expose par le serveur MCP.
+  \item Normalisation : suppression d'accents, casse, ponctuation et alias courants (ex. \textit{Krakow}).
+  \item Valeurs manquantes : si la ville n'est pas trouvee, le MCP renvoie \texttt{found=false} et aucun score.
+\end{itemize}
+
+Calcul utilise :
+\[
+\text{city\_score} = \left(1 - \frac{Sj - \min(Sj)}{\max(Sj) - \min(Sj)}\right) \times 100
+\]
+Ainsi, un Sj faible (forte concordance) donne un score plus eleve, tandis qu'un Sj eleve est penalise.
+
+Je me suis aidé de l'IA afin de trouver le calcul pour rendre le calcul plus lisible, précis et cohérent.
+
+\subsection{Choix de scoring et justification}
+\begin{itemize}
+  \item Pertinence : indicateur externe pour comparer rapidement l'attractivite des villes.
+  \item Simplicite : table pre-calculée, sans besoin de recalcul complexe.
+  \item Robustesse : normalisation et aliases limitent les erreurs de correspondance.
+\end{itemize}
+
+\subsection{Évaluation : est-ce que ça fonctionne comme attendu ?}
+Pour les villes presentes dans la table, le score est coherent et stable. Les limites viennent des villes absentes ou des libelles atypiques (ex. quartiers, regions). Les aliases ameliorent le taux de correspondance, mais un enrichissement geographique serait utile.
+
+% =========================
+\section{Analyse critique}
+\subsection{Difficultés rencontrées}
+\begin{itemize}
+  \item Choix d'un LLM gratuit : trouver un modele avec un plan gratuit, assez rapide et suffisamment performant pour des extractions fiables.
+  \item Parsing et fusion : difficultes a parser les sorties LLM puis a merger les flux pour n'obtenir qu'un seul objet exploitable.
+  \item Webhook Discord : configuration et tests pour respecter les contraintes de taille des messages.
+  \item Google Sheets : configuration Google Cloud API (OAuth) plus longue que prevu avant de pouvoir ecrire dans un tableur.
+\end{itemize}
+
+\subsection{Critères de filtrage choisis et justification}
+Le filtrage est volontairement leger pour maximiser la couverture : dedoublonnage par URL et separation selon \texttt{salary} present ou non. Cela permet d'identifier rapidement les offres les plus informatives sans exclure trop de candidats.
+
+\subsection{Apports du workflow et axes d’amélioration}
+\begin{itemize}
+  \item Gain de temps important sur la collecte et la mise en forme des offres.
+  \item Ameliorations : augmenter \texttt{max\_results}, ajouter des sources, filtrer par \texttt{city\_score}, enrichir la deduplication, meilleure gestion d'erreurs et retries.
+\end{itemize}
+
+% =========================
+\section{Conclusion}
+Le workflow automatise efficacement la recherche et la synthese d'offres de stage. L'extraction structuree et l'export permettent une analyse rapide, tandis que le scoring MCP apporte un signal supplementaire. Les principaux axes d'amelioration concernent la couverture des sources et la robustesse face aux donnees incompletes.
+
+% =========================
+\appendix
+\section{Annexes}
+\subsection{Prompts LLM (extraits)}
+\begin{lstlisting}
+Prompt d'extraction (Gemini) :
+You are a job-offer information extractor.
+
+STRICT RULES:
+- Output ONLY valid JSON. No markdown, no commentary, no surrounding text.
+- Do NOT invent. If a value is not explicitly present, use null.
+- Empty lists must be [].
+- Extract ONE output object per offer in the input array, preserving the same order and length.
+
+OUTPUT FORMAT:
+Return a JSON array of objects. Each object must follow EXACTLY this schema:
+
+{
+  "company": string|null,
+  "job_title": string|null,
+  "city": string|null,
+  "country": string|null,
+  "remote_policy": "onsite"|"hybrid"|"remote"|"unknown"|null,
+  "contract_type":   "internship"|"apprenticeship"|"full_time"|"part_time"|"unknown"|null,
+  "salary": string|null,
+  "currency": string|null,
+  "duration": string|null,
+  "application_deadline": string|null,
+  "skills": string[],
+  "languages": string[],
+  "source_url": string|null,
+  "source_title": string|null,
+  "city_score": number|null
+}
+
+MAPPING RULES:
+- source_url = offer.url if present, else null
+- source_title = offer.title if present, else null
+- city_score = offer.score if present, else use input.search_score if provided, else null
+- remote_policy:
+  - "remote" if clearly remote
+  - "hybrid" if clearly hybrid
+  - "onsite" if clearly onsite/on-site
+  - otherwise "unknown"
+- contract_type:
+  - "internship" if stage/internship/intern
+  - "apprenticeship" if alternance/apprenticeship
+  - otherwise "unknown"
+- salary: keep original text
+- currency: "EUR", "USD", "GBP" if clearly identifiable, else null
+
+Prompt de resume (Gemini) :
+Generate a short readable summary for each extracted offer.
+
+STRICT RULES:
+- Output ONLY valid JSON. No markdown, no commentary.
+- Return a JSON array with the same length/order as the input array.
+- Do not include any other keys.
+
+OUTPUT SCHEMA (per item):
+{
+  "source_url": string|null,
+  "summary": string
+}
+
+SUMMARY RULES:
+- 2 to 3 sentences maximum.
+- Include: company (if known), role, location, remote policy, contract type, and salary if present.
+- If a field is missing, omit it (do not guess).
+- Write the summary in French.
+
+Prompt de synthese finale (Gemini) :
+Tu es un assistant charge de produire un rapport clair et synthetique
+a partir d'une liste d'offres de stage.
+
+Ta tache :
+1) Un titre : "Synthese des offres de stage"
+2) Le nombre total d'offres pertinentes trouvees
+3) Le Top 3 des meilleures offres avec pour chacune :
+   - entreprise
+   - poste
+   - ville
+   - pourquoi elle est interessante (1 a 2 phrases max)
+4) Des statistiques globales :
+   - Villes les plus frequentes
+   - Types de contrats dominants
+   - Remote vs onsite vs hybride
+   - Salaires observes (si presents)
+5) Une conclusion courte (2-3 phrases) sur la qualite globale des offres
+\end{lstlisting}
+
+\subsection{Exemple de sortie JSON complète}
+Exemple synthetique (format complet) :
+\begin{lstlisting}
+{
+  "company": "Example Corp",
+  "job_title": "DevOps Intern",
+  "city": "Berlin",
+  "country": "Germany",
+  "remote_policy": "hybrid",
+  "contract_type": "internship",
+  "salary": "1200 EUR/month",
+  "currency": "EUR",
+  "duration": "6 months",
+  "application_deadline": null,
+  "skills": ["linux", "docker", "kubernetes"],
+  "languages": ["english"],
+  "source_url": "https://example.com/job",
+  "source_title": "DevOps Internship - Example Corp",
+  "city_score": 92.68,
+  "summary": "Example Corp propose un stage DevOps a Berlin en mode hybride..."
+}
+\end{lstlisting}
+
+\end{document}
