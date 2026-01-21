@@ -196,21 +196,6 @@
     },
     {
       "parameters": {
-        "compare": "selectedFields",
-        "fieldsToCompare": "source_url",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.removeDuplicates",
-      "typeVersion": 2,
-      "position": [
-        -592,
-        400
-      ],
-      "id": "62f5ae7a-fbc4-4d7c-a312-5f42515d21b5",
-      "name": "Remove Duplicates"
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -237,8 +222,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -128,
-        288
+        -336,
+        400
       ],
       "id": "bda00f95-7c5c-4634-89d2-39b89085219c",
       "name": "If"
@@ -451,8 +436,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        64,
-        192
+        -80,
+        304
       ],
       "id": "4ee3ecf6-ec2e-43f6-8e03-050ded6dca2b",
       "name": "save row true",
@@ -671,8 +656,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        64,
-        384
+        -80,
+        496
       ],
       "id": "a1ee0bf9-d7dd-4731-adf6-33e8b7122e1e",
       "name": "save row false",
@@ -687,14 +672,14 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "models/gemini-2.5-flash",
+          "value": "models/gemini-robotics-er-1.5-preview",
           "mode": "list",
-          "cachedResultName": "models/gemini-2.5-flash"
+          "cachedResultName": "models/gemini-robotics-er-1.5-preview"
         },
         "messages": {
           "values": [
             {
-              "content": "=You are an assistant tasked with producing a clear and concise report based on a list of internship offers.\n\nHere is the complete list of offers (JSON):\n{{ JSON.stringify($input.all().map(i => i.json), null, 2) }}\n\nYour task:\nWrite a structured report in natural language that includes:\n\n1) A title: \"Internship Offers Summary\"\n2) The total number of relevant offers found\n3) The Top 3 best offers, each including:\n  - company\n  - position\n  - city\n  - why it is interesting (maximum 1–2 sentences)\n\n4) Global statistics:\n  - Most frequent cities\n  - Dominant contract types\n  - Remote vs onsite vs hybrid distribution\n  - Observed salaries (if present)\n\n5) A short conclusion (2–3 sentences) about the overall quality of the offers\n\nRules:\n  - Use only the provided data\n  - Do not invent anything\n  - The output must be clean, structured, and directly readable by a human"
+              "content": "=Rules:\n  - Use only the provided data\n  - Do not invent anything\n  - The output must be clean, structured, and directly readable by a human\n\nYou must write the final answer in French.\n\nTask:\nSummarize the internship offers provided in the JSON below.\n\nProduce:\n1. Title: \"Synthèse des offres de stage\"\n2. Total number of offers\n3. Top 3 offers (company, job_title, city, short reason based only on the data)\n4. Statistics:\n   - Most frequent cities\n   - Contract types distribution\n   - Remote / onsite / hybrid distribution\n   - Salaries if present\n5. Short conclusion (2–3 sentences)\n\nRules:\n- Use only the provided data\n- Do not invent missing information\n- Be concise and structured\n\nData:\n{{ JSON.stringify($input.all().map(i => i.json), null, 2) }}\n"
             }
           ]
         },
@@ -704,8 +689,8 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        480,
-        288
+        384,
+        400
       ],
       "id": "6e791690-a2c5-4d02-a072-b396b0f5d071",
       "name": "Synthèse finale avec LLM",
@@ -725,8 +710,8 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        976,
-        288
+        896,
+        400
       ],
       "id": "82e37c95-3896-442c-83df-af5414acfc8b",
       "name": "Discord",
@@ -745,8 +730,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        784,
-        288
+        704,
+        400
       ],
       "id": "811c67d3-eeb3-40cd-bc87-4c84b4c22534",
       "name": "prepare message"
@@ -756,8 +741,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        304,
-        288
+        176,
+        400
       ],
       "id": "3cb22dab-fecf-408a-a588-175c33d7ad74",
       "name": "re merge de tout les résultat"
@@ -771,26 +756,11 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -288,
+        -544,
         288
       ],
       "id": "1b34ecf7-f472-4fbb-8567-b0b5e02ac247",
       "name": "ajout du summary avec les autre spec"
-    },
-    {
-      "parameters": {
-        "compare": "selectedFields",
-        "fieldsToCompare": "source_url",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.removeDuplicates",
-      "typeVersion": 2,
-      "position": [
-        -592,
-        272
-      ],
-      "id": "ca3a1e15-a3ed-4475-bab5-b07d6d72f1dc",
-      "name": "Remove Duplicates1"
     }
   ],
   "pinData": {},
@@ -854,9 +824,9 @@
       "main": [
         [
           {
-            "node": "Remove Duplicates",
+            "node": "ajout du summary avec les autre spec",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -870,7 +840,7 @@
             "index": 0
           },
           {
-            "node": "Remove Duplicates1",
+            "node": "ajout du summary avec les autre spec",
             "type": "main",
             "index": 0
           }
@@ -884,17 +854,6 @@
             "node": "Parse with summary",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Remove Duplicates": {
-      "main": [
-        [
-          {
-            "node": "ajout du summary avec les autre spec",
-            "type": "main",
-            "index": 1
           }
         ]
       ]
@@ -982,17 +941,6 @@
           }
         ]
       ]
-    },
-    "Remove Duplicates1": {
-      "main": [
-        [
-          {
-            "node": "ajout du summary avec les autre spec",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "active": false,
@@ -1000,7 +948,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "42395648-577f-4c54-8699-0964e074369c",
+  "versionId": "16ade976-0969-4694-ba1f-52db913e17d0",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "ddbebfcca13e069bd55489cb170b45cca00803c7c83d305f7ad693957ce4b499"

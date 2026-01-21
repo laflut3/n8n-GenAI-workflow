@@ -51,7 +51,7 @@
 % =========================
 \section{Contexte et objectifs}
 \subsection{Objectif du projet}
-Le workflow automatise la recherche d'offres de stage a l'etranger a partir d'une matrice \textit{ville × technologie}. Les resultats sont enrichis par un score de ville (MCP), structures par LLM, dedoublonnes, puis exportes vers Google Sheets et resumes dans une synthese envoyee sur Discord.
+Le workflow automatise la recherche d'offres de stage a l'etranger a partir d'une matrice \textit{ville × technologie}. Les resultats sont enrichis par un score de ville (MCP), structures par LLM, puis exportes vers Google Sheets et resumes dans une synthese envoyee sur Discord.
 
 \subsection{Périmètre et hypothèses}
 \begin{itemize}
@@ -75,24 +75,62 @@ Le workflow automatise la recherche d'offres de stage a l'etranger a partir d'un
 
 \subsubsection{Étape 1 — Génération des combinaisons ville × technologie}
 Un node Code genere les couples ville x technologie a partir de deux tableaux statiques.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/node_code_combination.png}
+  \caption{Node Code générant les combinaisons ville × technologie.}
+\end{figure}
 
 \subsubsection{Étape 2 — Recherche web (Tavily)}
 Chaque couple declenche une recherche Tavily avec la requete type \texttt{company <tech> <city> internship}. La recherche est en \texttt{basic}, avec \texttt{max\_results=2}.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/tavily_search.png}
+  \caption{Recherche web via Tavily.}
+\end{figure}
 
 \subsubsection{Étape 3 — Enrichissement scoring via MCP}
 Le MCP Client appelle l'outil \texttt{find\_city\_score} avec le nom de ville. Si la ville est connue, le MCP renvoie \texttt{sensitivity\_percent} et \texttt{city\_score}; sinon l'outil renvoie une erreur et aucun score n'est ajoute.
 
 \subsubsection{Étape 4 — Extraction d’informations via LLM}
 Le LLM retourne un JSON strict, sans texte additionnel, conforme a un schema fixe (company, job\_title, city, country, remote\_policy, contract\_type, salary, currency, duration, application\_deadline, skills, languages, source\_url, source\_title, city\_score). Les valeurs manquantes sont forcees a \texttt{null}.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/extract_auto_llm.png}
+  \caption{Extraction automatique des informations clés via LLM.}
+\end{figure}
+
+\subsubsection{Étape 4-bis — Node Code de parsing des extractions}
+Le LLM ne renvoie pas toujours un JSON propre (blocs \texttt{```json}, texte parasite, ou tableau/objet selon les cas). Le node Code nettoie d'abord la sortie en supprimant les fences Markdown et en tronquant tout ce qui précède le premier \texttt{\{} ou \texttt{[} et tout ce qui suit le dernier \texttt{\}} ou \texttt{]}. Ensuite, il tente un \texttt{JSON.parse} : si c'est un tableau, chaque entrée devient un item séparé ; si c'est un objet, il est encapsulé dans une liste. Le node normalise enfin le schéma (champs manquants à \texttt{null}, \texttt{skills} et \texttt{languages} en tableaux, \texttt{city\_score} seulement si numérique). Cette étape rend le flux stable et évite les cassures plus loin (filtrage et export).
 
 \subsubsection{Étape 5 — Génération des résumés via LLM}
 Un second LLM produit un resume FR de 2 a 3 phrases par offre. Les sorties non-JSON sont nettoyees et parsees dans un node Code.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/create_summary_llm.png}
+  \caption{Génération des résumés via LLM.}
+\end{figure}
+
+\subsubsection{Étape 5-bis — Node Code de parsing des résumés}
+Le résumé est aussi renvoyé par le LLM sous forme JSON, mais avec les mêmes risques d'irrégularités. Le node Code récupère le texte (souvent \texttt{content.parts[0].text}), supprime les fences \texttt{```json} et nettoie les débordements avant/après le JSON. Il garantit \texttt{1 item en entrée = 1 item en sortie} pour préserver les jointures, récupère \texttt{source\_url} quand il existe, et applique un fallback si le résumé est vide. En cas d'erreur LLM ou de parsing, il sort un item minimal avec un message par défaut, ce qui évite de perdre des offres lors des merges.
+
+Pour ce code de parsing, je me suis aidé de l'IA afin de fiabiliser le nettoyage du JSON et la gestion des cas d'erreur.
 
 \subsubsection{Étape 6 — Filtrage personnalisé}
-Le filtrage est minimal : dedoublonnage par \texttt{source\_url}, puis routage selon la presence d'un salaire pour separer deux onglets de stockage.
+Le filtrage est minimal : pas de dedoublonnage, seulement un routage selon la presence d'un salaire pour separer deux onglets de stockage.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/filtre_if.png}
+  \caption{Filtrage personnalisé minimal.}
+\end{figure}
 
 \subsubsection{Étape 7 — Export des résultats}
 Les offres sont ecrites dans Google Sheets (equivalent CSV), dans deux onglets en fonction du filtre (pour les offres ok selon le filtre et pour les autres). Colonnes : company, job\_title, contract\_type, city, country, salary, currency, duration, application\_deadline, skills, languages, source\_url, source\_title, city\_score, summary, remote\_policy.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/google_sheet_true.png}
+  \caption{Export des résultats dans Google Sheets.}
+\end{figure}
 
 \subsubsection{Étape 8 — Synthèse finale}
 Un LLM genere une synthese lisible avec un titre, le nombre d'offres, un top 3 argumente et des statistiques globales (villes, contrats, remote, salaires).
@@ -127,23 +165,16 @@ Exemple de 5 a 10 offres extraites (toutes les infos dans le JSON) :
   \caption{Aperçu de l’export CSV / Google Sheets.}
 \end{figure}
 
-\subsection{Workflow n8n (JSON) dans le repo}
-\begin{lstlisting}
-repo/
-  workflow-final.json
-\end{lstlisting}
-
 % =========================
 \section{Bonus — Méthode de scoring}
 \subsection{Méthode utilisée}
 Le scoring repose sur un service MCP local qui expose une table statique \texttt{CITY\_SENSITIVITY} (0–100). Pour chaque ville de la matrice, le workflow appelle \texttt{find\_city\_score(city\_name)}. La fonction effectue une recherche insensible a la casse, renvoie \texttt{sensitivity\_percent} si la ville est connue, sinon une erreur et le score est laisse a \texttt{null}. Ce score est ensuite injecte dans le champ \texttt{city\_score} des offres (export CSV et synthese) afin d'apporter un signal rapide d'attractivite sans dependre des donnees extraites.
 
-
 \subsection{Choix de scoring et justification}
 \begin{itemize}
   \item Pertinence : indicateur externe pour comparer rapidement l'attractivite des villes.
   \item Simplicite : table pre-calculée, sans besoin de recalcul complexe.
-  \item Robustesse : le score est stable et ne depend pas des offres collecte es.
+  \item Robustesse : le score est stable et ne depend pas des offres collectées.
 \end{itemize}
 
 \subsection{Évaluation : est-ce que ça fonctionne comme attendu ?}
@@ -160,12 +191,12 @@ Pour les villes presentes dans la table, le score est coherent et stable. Les li
 \end{itemize}
 
 \subsection{Critères de filtrage choisis et justification}
-Le filtrage est volontairement leger pour maximiser la couverture : dedoublonnage par URL et separation selon \texttt{salary} present ou non. Cela permet d'identifier rapidement les offres les plus informatives sans exclure trop de candidats.
+Le filtrage est volontairement leger pour maximiser la couverture : séparation selon \texttt{salary} present ou non. Cela permet d'identifier rapidement les offres les plus informatives sans exclure trop de candidats.
 
 \subsection{Apports du workflow et axes d’amélioration}
 \begin{itemize}
   \item Gain de temps important sur la collecte et la mise en forme des offres.
-  \item Ameliorations : augmenter \texttt{max\_results}, ajouter des sources, filtrer par \texttt{city\_score}, enrichir la deduplication, meilleure gestion d'erreurs et retries.
+  \item Ameliorations : augmenter \texttt{max\_results}, ajouter des sources, filtrer par \texttt{city\_score}, ajouter un dedoublonnage, meilleure gestion d'erreurs et retries.
 \end{itemize}
 
 % =========================
@@ -286,29 +317,33 @@ OUTPUT SCHEMA (per item):
 -------------------------------------------------------------------------------------------
 
 Prompt de synthese finale (Gemini) :
-You are a report writer for internship search results.
+Rules:
+  - Use only the provided data
+  - Do not invent anything
+  - The output must be clean, structured, and directly readable by a human
 
-STRICT RULES:
-- Output ONLY plain text. No JSON, no markdown, no commentary.
-- Write in French.
-- Keep the message under 1900 characters.
-- Do not invent numbers or facts.
+You must write the final answer in French.
 
-INPUT:
-You will receive a JSON array of extracted offers. Each item may include:
-company, job_title, city, country, remote_policy, contract_type, salary, currency, duration, application_deadline, skills, languages, source_url, source_title, city_score, summary.
+Task:
+Summarize the internship offers provided in the JSON below.
 
-OUTPUT FORMAT:
-- Title on the first line.
-- Then 3 to 5 short paragraphs:
-  1) Nombre total d'offres valides.
-  2) Top 3 des offres les plus interessantes avec 1 phrase de justification chacune (score ville, salaire, remote, contrat, pertinence tech).
-  3) Statistiques globales (villes les plus presentes, types de contrats, remote, salaires disponibles).
+Produce:
+1. Title: "Synthèse des offres de stage"
+2. Total number of offers
+3. Top 3 offers (company, job_title, city, short reason based only on the data)
+4. Statistics:
+   - Most frequent cities
+   - Contract types distribution
+   - Remote / onsite / hybrid distribution
+   - Salaries if present
+5. Short conclusion (2–3 sentences)
 
-RULES:
-- If fewer than 3 offers, list all.
-- If a field is missing, skip it.
-- Use source_url only if needed to disambiguate.
+Rules:
+- Use only the provided data
+- Do not invent missing information
+- Be concise and structured
+
+Data:
 
 \end{lstlisting}
 
