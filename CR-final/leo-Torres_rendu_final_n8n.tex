@@ -96,9 +96,19 @@ Les offres sont ecrites dans Google Sheets (equivalent CSV), dans deux onglets e
 
 \subsubsection{Étape 8 — Synthèse finale}
 Un LLM genere une synthese lisible avec un titre, le nombre d'offres, un top 3 argumente et des statistiques globales (villes, contrats, remote, salaires).
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/llm_synthese.png}
+  \caption{Synthèse finale générée par LLM.}
+\end{figure}
 
 \subsubsection{Étape 9 — Notification}
 La synthese est envoyee sur Discord via webhook. Un node Code tronque le message a 1900 caracteres pour respecter la limite.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/discord_notification.png}
+  \caption{Notification Discord via webhook.}
+\end{figure}
 
 % =========================
 \section{Exemples de résultats}

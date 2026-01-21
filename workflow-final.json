@@ -237,7 +237,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -160,
+        -128,
         288
       ],
       "id": "bda00f95-7c5c-4634-89d2-39b89085219c",
@@ -687,14 +687,14 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "models/gemini-robotics-er-1.5-preview",
+          "value": "models/gemini-2.5-flash",
           "mode": "list",
-          "cachedResultName": "models/gemini-robotics-er-1.5-preview"
+          "cachedResultName": "models/gemini-2.5-flash"
         },
         "messages": {
           "values": [
             {
-              "content": "=Tu es un assistant chargé de produire un rapport clair et synthétique à partir d'une liste d'offres de stage.\n\nVoici la liste complète des offres (JSON) :\n{{ JSON.stringify($input.all().map(i => i.json), null, 2) }}\n\nTa tâche :\nRédige un rapport structuré en texte naturel comprenant :\n\n1) Un titre : \"Synthèse des offres de stage\"\n2) Le nombre total d'offres pertinentes trouvées\n3) Le Top 3 des meilleures offres avec pour chacune :\n   - entreprise\n   - poste\n   - ville\n   - pourquoi elle est intéressante (1 à 2 phrases max)\n4) Des statistiques globales :\n   - Villes les plus fréquentes\n   - Types de contrats dominants\n   - Remote vs onsite vs hybride\n   - Salaires observés (si présents)\n5) Une conclusion courte (2-3 phrases) sur la qualité globale des offres\n\nRègles :\n- Utilise uniquement les données fournies\n- N'invente rien\n- Le résultat doit être propre, structuré et directement lisible par un humain\n"
+              "content": "=You are an assistant tasked with producing a clear and concise report based on a list of internship offers.\n\nHere is the complete list of offers (JSON):\n{{ JSON.stringify($input.all().map(i => i.json), null, 2) }}\n\nYour task:\nWrite a structured report in natural language that includes:\n\n1) A title: \"Internship Offers Summary\"\n2) The total number of relevant offers found\n3) The Top 3 best offers, each including:\n  - company\n  - position\n  - city\n  - why it is interesting (maximum 1–2 sentences)\n\n4) Global statistics:\n  - Most frequent cities\n  - Dominant contract types\n  - Remote vs onsite vs hybrid distribution\n  - Observed salaries (if present)\n\n5) A short conclusion (2–3 sentences) about the overall quality of the offers\n\nRules:\n  - Use only the provided data\n  - Do not invent anything\n  - The output must be clean, structured, and directly readable by a human"
             }
           ]
         },
@@ -730,7 +730,13 @@
       ],
       "id": "82e37c95-3896-442c-83df-af5414acfc8b",
       "name": "Discord",
-      "webhookId": "dba46f4a-05ee-44f5-b44d-c8e4c0c310eb"
+      "webhookId": "dba46f4a-05ee-44f5-b44d-c8e4c0c310eb",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "vZxiBK48TNe1NYDu",
+          "name": "Discord Webhook account"
+        }
+      }
     },
     {
       "parameters": {
@@ -765,11 +771,26 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -352,
+        -288,
         288
       ],
       "id": "1b34ecf7-f472-4fbb-8567-b0b5e02ac247",
       "name": "ajout du summary avec les autre spec"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "source_url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        272
+      ],
+      "id": "ca3a1e15-a3ed-4475-bab5-b07d6d72f1dc",
+      "name": "Remove Duplicates1"
     }
   ],
   "pinData": {},
@@ -849,7 +870,7 @@
             "index": 0
           },
           {
-            "node": "ajout du summary avec les autre spec",
+            "node": "Remove Duplicates1",
             "type": "main",
             "index": 0
           }
@@ -961,6 +982,17 @@
           }
         ]
       ]
+    },
+    "Remove Duplicates1": {
+      "main": [
+        [
+          {
+            "node": "ajout du summary avec les autre spec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -968,8 +1000,9 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "285f56f5-bbe4-45ad-9115-66e4c75ae8ca",
+  "versionId": "42395648-577f-4c54-8699-0964e074369c",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "ddbebfcca13e069bd55489cb170b45cca00803c7c83d305f7ad693957ce4b499"
   },
   "id": "cgi2hWZbFHhclkMlB0cm4",
