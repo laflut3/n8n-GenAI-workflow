@@ -131,6 +131,7 @@ Les offres sont ecrites dans Google Sheets (equivalent CSV), dans deux onglets e
   \includegraphics[width=\textwidth]{figures/google_sheet_true.png}
   \caption{Export des résultats dans Google Sheets.}
 \end{figure}
+Pour configurer Google Sheets, il faut d'abord creer un projet dans Google Cloud Console, activer l'API Google Sheets, puis configurer l'ecran de consentement OAuth (type externe) et ajouter son compte en \textit{test user}. Ensuite, creer des identifiants OAuth (client Web ou Bureau), recuperer le fichier JSON, et renseigner dans n8n les champs \textit{Client ID} / \textit{Client Secret} ainsi que l'URL de redirection fournie par n8n. Enfin, authoriser le compte et selectionner le tableur (ou l'ID du fichier) pour que le node puisse ecrire dans l'onglet cible.
 
 \subsubsection{Étape 8 — Synthese finale}
 Un LLM genere une synthese lisible avec un titre, le nombre d'offres, un top 3 argumente et des statistiques globales (villes, contrats, remote, salaires).
