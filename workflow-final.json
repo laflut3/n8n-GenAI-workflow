@@ -196,50 +196,6 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "18f9c062-20b8-401f-ab07-97e3641ffb57",
-              "leftValue": "={{ $json.salary }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            },
-            {
-              "id": "1eeccb1f-8ee8-43ae-bf05-86d08ddb0c32",
-              "leftValue": "",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "or"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -336,
-        288
-      ],
-      "id": "bda00f95-7c5c-4634-89d2-39b89085219c",
-      "name": "If"
-    },
-    {
-      "parameters": {
         "operation": "append",
         "documentId": {
           "__rl": true,
@@ -446,231 +402,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -80,
-        272
+        -128,
+        288
       ],
       "id": "4ee3ecf6-ec2e-43f6-8e03-050ded6dca2b",
       "name": "save row true",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "YEPk1JpIhQ2493Ol",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A",
-          "mode": "list",
-          "cachedResultName": "Internships",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": 504196108,
-          "mode": "list",
-          "cachedResultName": "result false",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCsWASPYcWBDV9WERPpD_mmxRzjT7PpBdbMBvMF3G9A/edit#gid=504196108"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "company": "={{ $json.company }}",
-            "job_title": "={{ $json.job_title }}",
-            "contract_type": "={{ $json.contract_type }}",
-            "city": "={{ $json.city }}",
-            "country": "={{ $json.country }}",
-            "salary": "={{ $json.salary }}",
-            "currency": "={{ $json.currency }}",
-            "duration": "={{ $json.duration }}",
-            "application_deadline": "={{ $json.application_deadline }}",
-            "skills": "={{ $json.skills }}",
-            "languages": "={{ $json.languages }}",
-            "source_url": "={{ $json.source_url }}",
-            "source_title": "={{ $json.source_title }}",
-            "city_score": "={{ $json.city_score }}",
-            "summary": "={{ $json.summary }}",
-            "remote_policy": "={{ $json.remote_policy }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "company",
-              "displayName": "company",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "job_title",
-              "displayName": "job_title",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "city",
-              "displayName": "city",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "country",
-              "displayName": "country",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "remote_policy",
-              "displayName": "remote_policy",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "contract_type",
-              "displayName": "contract_type",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "salary",
-              "displayName": "salary",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "currency",
-              "displayName": "currency",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "duration",
-              "displayName": "duration",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "application_deadline",
-              "displayName": "application_deadline",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "skills",
-              "displayName": "skills",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "languages",
-              "displayName": "languages",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "source_url",
-              "displayName": "source_url",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "source_title",
-              "displayName": "source_title",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "city_score",
-              "displayName": "city_score",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "summary",
-              "displayName": "summary",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
-      "position": [
-        -80,
-        432
-      ],
-      "id": "a1ee0bf9-d7dd-4731-adf6-33e8b7122e1e",
-      "name": "save row false",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "YEPk1JpIhQ2493Ol",
@@ -699,8 +435,8 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        128,
-        272
+        80,
+        288
       ],
       "id": "6e791690-a2c5-4d02-a072-b396b0f5d071",
       "name": "Synthèse finale avec LLM",
@@ -720,8 +456,8 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        672,
-        272
+        624,
+        288
       ],
       "id": "82e37c95-3896-442c-83df-af5414acfc8b",
       "name": "Discord",
@@ -740,8 +476,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        464,
-        272
+        416,
+        288
       ],
       "id": "811c67d3-eeb3-40cd-bc87-4c84b4c22534",
       "name": "prepare message"
@@ -760,6 +496,40 @@
       ],
       "id": "1b34ecf7-f472-4fbb-8567-b0b5e02ac247",
       "name": "ajout du summary avec les autre spec"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "48c88993-c259-4e49-b1db-66406dc459e1",
+              "leftValue": "={{ $json.salary }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        288
+      ],
+      "id": "366b3b75-dac5-4e89-bf6c-0cf72cc2ee44",
+      "name": "Filter"
     }
   ],
   "pinData": {},
@@ -857,24 +627,6 @@
         ]
       ]
     },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "save row true",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "save row false",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Synthèse finale avec LLM": {
       "main": [
         [
@@ -908,16 +660,22 @@
         ]
       ]
     },
-    "save row false": {
-      "main": [
-        []
-      ]
-    },
     "ajout du summary avec les autre spec": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "save row true",
             "type": "main",
             "index": 0
           }
@@ -930,7 +688,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "f6dddac5-3410-4124-b57b-00e2825e2391",
+  "versionId": "a27446a4-ab2d-4f3a-9d9d-fec923b39acc",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "ddbebfcca13e069bd55489cb170b45cca00803c7c83d305f7ad693957ce4b499"
