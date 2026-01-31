@@ -132,12 +132,12 @@ Les offres sont ecrites dans Google Sheets (equivalent CSV), dans deux onglets e
   \caption{Export des résultats dans Google Sheets.}
 \end{figure}
 
-\subsubsection{Étape 8 — Synthèse finale}
+\subsubsection{Étape 8 — Synthese finale}
 Un LLM genere une synthese lisible avec un titre, le nombre d'offres, un top 3 argumente et des statistiques globales (villes, contrats, remote, salaires).
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{figures/llm_synthese.png}
-  \caption{Synthèse finale générée par LLM.}
+  \caption{Synthese finale générée par LLM.}
 \end{figure}
 
 \subsubsection{Étape 9 — Notification}
@@ -155,7 +155,7 @@ Exemple de 5 a 10 offres extraites (toutes les infos dans le JSON) :
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{figures/exemple_offres_json.png}
-  \caption{Exemple de 5–10 offres extraites (JSON).}
+  \caption{Exemple de 5-10 offres extraites (JSON).}
 \end{figure}
 
 \subsection{Fichier CSV exporté (ou capture)}
@@ -168,7 +168,7 @@ Exemple de 5 a 10 offres extraites (toutes les infos dans le JSON) :
 % =========================
 \section{Bonus — Méthode de scoring}
 \subsection{Méthode utilisée}
-Le scoring repose sur un service MCP local qui expose une table statique \texttt{CITY\_SENSITIVITY} (0–100). Pour chaque ville de la matrice, le workflow appelle \texttt{find\_city\_score(city\_name)}. La fonction effectue une recherche insensible a la casse, renvoie \texttt{sensitivity\_percent} si la ville est connue, sinon une erreur et le score est laisse a \texttt{null}. Ce score est ensuite injecte dans le champ \texttt{city\_score} des offres (export CSV et synthese) afin d'apporter un signal rapide d'attractivite sans dependre des donnees extraites.
+Le scoring repose sur un service MCP local qui expose une table statique \texttt{CITY\_SENSITIVITY} (0-100). Pour chaque ville de la matrice, le workflow appelle \texttt{find\_city\_score(city\_name)}. La fonction effectue une recherche insensible a la casse, renvoie \texttt{sensitivity\_percent} si la ville est connue, sinon une erreur et le score est laisse a \texttt{null}. Ce score est ensuite injecte dans le champ \texttt{city\_score} des offres (export CSV et synthese) afin d'apporter un signal rapide d'attractivite sans dependre des donnees extraites.
 
 \subsection{Choix de scoring et justification}
 \begin{itemize}
@@ -328,7 +328,7 @@ Task:
 Summarize the internship offers provided in the JSON below.
 
 Produce:
-1. Title: "Synthèse des offres de stage"
+1. Title: "Synthese des offres de stage"
 2. Total number of offers
 3. Top 3 offers (company, job_title, city, short reason based only on the data)
 4. Statistics:
@@ -336,7 +336,7 @@ Produce:
    - Contract types distribution
    - Remote / onsite / hybrid distribution
    - Salaries if present
-5. Short conclusion (2–3 sentences)
+5. Short conclusion (2-3 sentences)
 
 Rules:
 - Use only the provided data
