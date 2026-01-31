@@ -117,7 +117,7 @@ Le résumé est aussi renvoyé par le LLM sous forme JSON, mais avec les mêmes 
 Pour ce code de parsing, je me suis aidé de l'IA afin de fiabiliser le nettoyage du JSON et la gestion des cas d'erreur.
 
 \subsubsection{Étape 6 — Filtrage personnalisé}
-Le filtrage est minimal : pas de dedoublonnage, seulement un routage selon la presence d'un salaire pour separer deux onglets de stockage.
+Le filtrage est minimal : pas de dedoublonnage. Un node \textit{Filter} conserve uniquement les offres dont le champ \texttt{salary} n'est pas vide. Les autres offres ne sont pas exportees.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{figures/filtre_if.png}
@@ -125,7 +125,7 @@ Le filtrage est minimal : pas de dedoublonnage, seulement un routage selon la pr
 \end{figure}
 
 \subsubsection{Étape 7 — Export des résultats}
-Les offres sont ecrites dans Google Sheets (equivalent CSV), dans deux onglets en fonction du filtre (pour les offres ok selon le filtre et pour les autres). Colonnes : company, job\_title, contract\_type, city, country, salary, currency, duration, application\_deadline, skills, languages, source\_url, source\_title, city\_score, summary, remote\_policy.
+Les offres filtreees sont ecrites dans Google Sheets (equivalent CSV), dans l'onglet \textit{Results true} du tableur \textit{Internships}. Colonnes : company, job\_title, contract\_type, city, country, salary, currency, duration, application\_deadline, skills, languages, source\_url, source\_title, city\_score, summary, remote\_policy.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{figures/google_sheet_true.png}
@@ -134,7 +134,7 @@ Les offres sont ecrites dans Google Sheets (equivalent CSV), dans deux onglets e
 Pour configurer Google Sheets, il faut d'abord creer un projet dans Google Cloud Console, activer l'API Google Sheets, puis configurer l'ecran de consentement OAuth (type externe) et ajouter son compte en \textit{test user}. Ensuite, creer des identifiants OAuth (client Web ou Bureau), recuperer le fichier JSON, et renseigner dans n8n les champs \textit{Client ID} / \textit{Client Secret} ainsi que l'URL de redirection fournie par n8n. Enfin, authoriser le compte et selectionner le tableur (ou l'ID du fichier) pour que le node puisse ecrire dans l'onglet cible.
 
 \subsubsection{Étape 8 — Synthese finale}
-Un LLM genere une synthese lisible avec un titre, le nombre d'offres, un top 3 argumente et des statistiques globales (villes, contrats, remote, salaires).
+Un LLM genere une synthese structurée en francais uniquement (sans JSON). Le prompt impose un format en 5 parties : titre, nombre total d'offres, top 3 argumente, statistiques globales (villes frequentes, types de contrat, onsite/hybrid/remote/unknown, salaires si disponibles) et une conclusion courte (2 a 3 phrases), sans invention d'information.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{figures/llm_synthese.png}
@@ -142,7 +142,7 @@ Un LLM genere une synthese lisible avec un titre, le nombre d'offres, un top 3 a
 \end{figure}
 
 \subsubsection{Étape 9 — Notification}
-La synthese est envoyee sur Discord via webhook. Un node Code tronque le message a 1900 caracteres pour respecter la limite.
+La synthese est envoyee sur Discord via webhook. Un node Code extrait le texte renvoye par le LLM (par ex. \texttt{content.parts[0].text}), tronque a 1900 caracteres si necessaire, et ajoute un marqueur \textit{message tronque} avant envoi.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{figures/discord_notification.png}
@@ -318,33 +318,54 @@ OUTPUT SCHEMA (per item):
 -------------------------------------------------------------------------------------------
 
 Prompt de synthese finale (Gemini) :
-Rules:
-  - Use only the provided data
-  - Do not invent anything
-  - The output must be clean, structured, and directly readable by a human
+Role :
+Tu es un generateur de rapports synthetiques a partir de donnees structurees.
 
-You must write the final answer in French.
+Contraintes strictes :
+- Utilise uniquement les donnees fournies ci-dessous
+- N'invente aucune information
+- Ne fais aucune supposition
+- Si une information est absente ou null, indique-le explicitement ou ignore-la selon le contexte
+- La sortie doit etre claire, structuree et directement lisible par un humain
+- La reponse finale doit etre uniquement en francais
+- Ne retourne pas de JSON, uniquement du texte structure
 
-Task:
-Summarize the internship offers provided in the JSON below.
+Tache :
+A partir de la liste d'offres de stage fournie, genere un rapport de synthese structure comme suit :
 
-Produce:
-1. Title: "Synthese des offres de stage"
-2. Total number of offers
-3. Top 3 offers (company, job_title, city, short reason based only on the data)
-4. Statistics:
-   - Most frequent cities
-   - Contract types distribution
-   - Remote / onsite / hybrid distribution
-   - Salaries if present
-5. Short conclusion (2-3 sentences)
+1. Titre
+   "Synthese des offres de stage"
 
-Rules:
-- Use only the provided data
-- Do not invent missing information
-- Be concise and structured
+2. Nombre total d'offres
+   Indique le nombre total d'offres analysees.
 
-Data:
+3. Top 3 des offres recommandees
+   Pour chaque offre :
+   - Entreprise
+   - Intitule du poste
+   - Ville (si disponible)
+   - Courte justification basee uniquement sur les donnees presentes
+     (exemples autorises : localisation, politique de teletravail, presence d'un salaire, clarte du poste)
+
+4. Statistiques globales
+   Presente les statistiques suivantes uniquement si les donnees existent :
+   - Villes les plus frequentes
+   - Repartition des types de contrat
+   - Repartition du mode de travail :
+     * onsite
+     * hybrid
+     * remote
+     * unknown
+   - Salaires :
+     * liste ou fourchette des salaires disponibles
+     * precise explicitement si peu ou aucune donnee n'est disponible
+
+5. Conclusion
+   Redige une conclusion courte de 2 a 3 phrases maximum resumant :
+   - la diversite ou la concentration des offres
+   - les tendances principales observees (localisation, teletravail, remuneration)
+
+Donnees a analyser :
 
 \end{lstlisting}
 
