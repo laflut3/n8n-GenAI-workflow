@@ -213,6 +213,16 @@
                 "operation": "notEmpty",
                 "singleValue": true
               }
+            },
+            {
+              "id": "1eeccb1f-8ee8-43ae-bf05-86d08ddb0c32",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
             }
           ],
           "combinator": "or"
@@ -223,7 +233,7 @@
       "typeVersion": 2.3,
       "position": [
         -336,
-        400
+        288
       ],
       "id": "bda00f95-7c5c-4634-89d2-39b89085219c",
       "name": "If"
@@ -437,7 +447,7 @@
       "typeVersion": 4.7,
       "position": [
         -80,
-        304
+        272
       ],
       "id": "4ee3ecf6-ec2e-43f6-8e03-050ded6dca2b",
       "name": "save row true",
@@ -657,7 +667,7 @@
       "typeVersion": 4.7,
       "position": [
         -80,
-        496
+        432
       ],
       "id": "a1ee0bf9-d7dd-4731-adf6-33e8b7122e1e",
       "name": "save row false",
@@ -689,8 +699,8 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        384,
-        400
+        128,
+        272
       ],
       "id": "6e791690-a2c5-4d02-a072-b396b0f5d071",
       "name": "Synthèse finale avec LLM",
@@ -710,8 +720,8 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        896,
-        400
+        672,
+        272
       ],
       "id": "82e37c95-3896-442c-83df-af5414acfc8b",
       "name": "Discord",
@@ -730,22 +740,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        704,
-        400
+        464,
+        272
       ],
       "id": "811c67d3-eeb3-40cd-bc87-4c84b4c22534",
       "name": "prepare message"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        176,
-        400
-      ],
-      "id": "3cb22dab-fecf-408a-a588-175c33d7ad74",
-      "name": "re merge de tout les résultat"
     },
     {
       "parameters": {
@@ -902,7 +901,7 @@
       "main": [
         [
           {
-            "node": "re merge de tout les résultat",
+            "node": "Synthèse finale avec LLM",
             "type": "main",
             "index": 0
           }
@@ -911,24 +910,7 @@
     },
     "save row false": {
       "main": [
-        [
-          {
-            "node": "re merge de tout les résultat",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "re merge de tout les résultat": {
-      "main": [
-        [
-          {
-            "node": "Synthèse finale avec LLM",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "ajout du summary avec les autre spec": {
@@ -948,7 +930,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "16ade976-0969-4694-ba1f-52db913e17d0",
+  "versionId": "f6dddac5-3410-4124-b57b-00e2825e2391",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "ddbebfcca13e069bd55489cb170b45cca00803c7c83d305f7ad693957ce4b499"
