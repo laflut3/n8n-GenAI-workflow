@@ -402,7 +402,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -128,
+        -160,
         288
       ],
       "id": "4ee3ecf6-ec2e-43f6-8e03-050ded6dca2b",
@@ -425,7 +425,7 @@
         "messages": {
           "values": [
             {
-              "content": "=Rules:\n  - Use only the provided data\n  - Do not invent anything\n  - The output must be clean, structured, and directly readable by a human\n\nYou must write the final answer in French.\n\nTask:\nSummarize the internship offers provided in the JSON below.\n\nProduce:\n1. Title: \"Synthèse des offres de stage\"\n2. Total number of offers\n3. Top 3 offers (company, job_title, city, short reason based only on the data)\n4. Statistics:\n   - Most frequent cities\n   - Contract types distribution\n   - Remote / onsite / hybrid distribution\n   - Salaries if present\n5. Short conclusion (2–3 sentences)\n\nRules:\n- Use only the provided data\n- Do not invent missing information\n- Be concise and structured\n\nData:\n{{ JSON.stringify($input.all().map(i => i.json), null, 2) }}\n"
+              "content": "=Rôle :\nTu es un générateur de rapports synthétiques à partir de données structurées.\n\nContraintes strictes :\n- Utilise uniquement les données fournies ci-dessous\n- N’invente aucune information\n- Ne fais aucune supposition\n- Si une information est absente ou null, indique-le explicitement ou ignore-la selon le contexte\n- La sortie doit être claire, structurée et directement lisible par un humain\n- La réponse finale doit être uniquement en français\n- Ne retourne pas de JSON, uniquement du texte structuré\n\nTâche :\nÀ partir de la liste d’offres de stage fournie, génère un rapport de synthèse structuré comme suit :\n\n1. Titre\n   \"Synthèse des offres de stage\"\n\n2. Nombre total d’offres\n   Indique le nombre total d’offres analysées.\n\n3. Top 3 des offres recommandées\n   Pour chaque offre :\n   - Entreprise\n   - Intitulé du poste\n   - Ville (si disponible)\n   - Courte justification basée uniquement sur les données présentes\n     (exemples autorisés : localisation, politique de télétravail, présence d’un salaire, clarté du poste)\n\n4. Statistiques globales\n   Présente les statistiques suivantes uniquement si les données existent :\n   - Villes les plus fréquentes\n   - Répartition des types de contrat\n   - Répartition du mode de travail :\n     * onsite\n     * hybrid\n     * remote\n     * unknown\n   - Salaires :\n     * liste ou fourchette des salaires disponibles\n     * précise explicitement si peu ou aucune donnée n’est disponible\n\n5. Conclusion\n   Rédige une conclusion courte de 2 à 3 phrases maximum résumant :\n   - la diversité ou la concentration des offres\n   - les tendances principales observées (localisation, télétravail, rémunération)\n\nDonnées à analyser :\n{{ JSON.stringify($input.all().map(i => i.json), null, 2) }}"
             }
           ]
         },
@@ -435,7 +435,7 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        80,
+        32,
         288
       ],
       "id": "6e791690-a2c5-4d02-a072-b396b0f5d071",
@@ -456,7 +456,7 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        624,
+        560,
         288
       ],
       "id": "82e37c95-3896-442c-83df-af5414acfc8b",
@@ -476,7 +476,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        416,
+        352,
         288
       ],
       "id": "811c67d3-eeb3-40cd-bc87-4c84b4c22534",
@@ -688,7 +688,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "a27446a4-ab2d-4f3a-9d9d-fec923b39acc",
+  "versionId": "fd5a11aa-839c-48a4-9188-63d410880cae",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "ddbebfcca13e069bd55489cb170b45cca00803c7c83d305f7ad693957ce4b499"
